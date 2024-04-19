@@ -1,10 +1,10 @@
 [user]
-	name = Luke Waite
-	email = lwaite@intouchinsight.com
+	name = {NAME}
+	email = {EMAIL}
 	signingkey = 311F38DF0903898A
 [core]
 	editor = vim
-	excludesfile = /Users/lwaite/.gitignore_global
+	excludesfile = /Users/{USER_DIRECTORY}/.gitignore_global
 [push]
 	default = simple
 [help]

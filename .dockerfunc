@@ -1,4 +1,4 @@
-export DOCKER_REPO_PREFIX=lukewaite
+export DOCKER_REPO_PREFIX={USER_DIRECTORY}
 
 aws1(){
 	docker run -it --rm \
