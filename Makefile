@@ -3,40 +3,61 @@
 
 .PHONY: install-prompt
 install-prompt: ## Default target - Prompts user with a list of available installations
-	@selected_options=$$(whiptail --title "Installation Options" \
-		--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
-		15 78 6 \
-		"dotfiles" "Install dotfiles (symlinks configuration files)" OFF \
-		"core" "Install Rosetta and configure core settings" OFF \
-		"slack" "Install Slack messaging app" OFF \
-		"vscode" "Install Visual Studio Code editor" OFF \
-		"iterm2" "Install iTerm2 terminal emulator" OFF \
-		"nvim-config" "Install nvim and config" OFF \
-		"git-cof" "Install git-cof Checking out branches by story number" OFF \
+	@install_choice=$$(whiptail --title "Installation Options" \
+		--menu "Choose an installation option:" \
+		15 78 2 \
+		"all" "Install everything (all available components)" \
+		"custom" "Select individual components to install" \
 		3>&1 1>&2 2>&3); \
 	if [ $$? -eq 0 ]; then \
-		selected_options=$$(echo $$selected_options | tr -d '"'); \
-		if [ -n "$$selected_options" ]; then \
-			echo "\nYou selected: $$selected_options"; \
-			if whiptail --title "Confirm Installation" --yesno "Do you want to proceed with the installation?" 8 60 3>&1 1>&2 2>&3; then \
-				echo "\nProcessing selections..."; \
-				for option in $$selected_options; do \
-					echo "\nInstalling $$option..." && \
-					make install-$$option; \
-				done; \
+		if [ "$$install_choice" = "all" ]; then \
+			if whiptail --title "Confirm Installation" --yesno "You selected to install EVERYTHING:\n\n• dotfiles: symlinks configuration files\n• core: Rosetta and core settings\n• slack: Slack messaging app\n\n• vscode: Visual Studio Code editor\n• iterm2: iTerm2 terminal emulator\n• nvim-config: Neovim and configuration\n\n• tmux: terminal multiplexer\n• git-cof: git checkout by story number\n\nDo you want to proceed with the installation?" 22 70 3>&1 1>&2 2>&3; then \
+				echo "\nInstalling everything..."; \
+				make all; \
 				echo "\nInstallation complete!"; \
 			else \
 				echo "Installation canceled."; \
 			fi; \
-		else \
-			echo "No options selected. Installation canceled."; \
+		elif [ "$$install_choice" = "custom" ]; then \
+			selected_options=$$(whiptail --title "Custom Installation" \
+				--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
+				15 78 8 \
+				"dotfiles" "Install dotfiles (symlinks configuration files)" OFF \
+				"core" "Install Rosetta and configure core settings" OFF \
+				"slack" "Install Slack messaging app" OFF \
+				"vscode" "Install Visual Studio Code editor" OFF \
+				"iterm2" "Install iTerm2 terminal emulator" OFF \
+				"nvim-config" "Install Neovim and configuration" OFF \
+				"tmux" "Install tmux terminal multiplexer" OFF \
+				"git-cof" "Install git-cof Checking out branches by story number" OFF \
+				3>&1 1>&2 2>&3); \
+			if [ $$? -eq 0 ]; then \
+				selected_options=$$(echo $$selected_options | tr -d '"'); \
+				if [ -n "$$selected_options" ]; then \
+					echo "\nYou selected: $$selected_options"; \
+					if whiptail --title "Confirm Installation" --yesno "You selected:\n\n$$selected_options\n\nDo you want to proceed with the installation?" 15 70 3>&1 1>&2 2>&3; then \
+						echo "\nProcessing selections..."; \
+						for option in $$selected_options; do \
+							echo "\nInstalling $$option..." && \
+							make install-$$option; \
+						done; \
+						echo "\nInstallation complete!"; \
+					else \
+						echo "Installation canceled."; \
+					fi; \
+				else \
+					echo "No options selected. Installation canceled."; \
+				fi; \
+			else \
+				echo "Installation canceled."; \
+			fi; \
 		fi; \
 	else \
 		echo "Installation canceled."; \
 	fi
 
 .PHONY: all
-all: dotfiles install-core install-slack install-vscode install-iterm2 install-nvim-config install-git-cof ## Installs the bin and etc directory files and the dotfiles.
+all: dotfiles install-core install-slack install-vscode install-iterm2 install-nvim-config install-tmux install-git-cof ## Installs the bin and etc directory files and the dotfiles.
 
 .PHONY: dotfiles
 dotfiles: ## Installs the dotfiles.
@@ -127,6 +148,23 @@ install-slack:
 		echo "Slack installed."; \
 	else \
 		echo "Slack is already installed."; \
+	fi
+
+.PHONY: install-tmux
+install-tmux: ## Installs tmux terminal multiplexer
+	@echo "Checking for Homebrew..."
+	@if ! which brew > /dev/null 2>&1; then \
+		echo "Homebrew is not installed. Installing Homebrew..."; \
+		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		echo "Homebrew installed."; \
+	fi; \
+	echo "Checking for tmux..."
+	@if ! brew list | grep -q '^tmux$$'; then \
+		echo "tmux is not installed. Installing tmux..."; \
+		brew install tmux; \
+		echo "tmux installed."; \
+	else \
+		echo "tmux is already installed."; \
 	fi
 
 .PHONY: install-nvim-config
