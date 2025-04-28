@@ -33,6 +33,9 @@
     mk = "checkout -b"
     del = "branch -D"
     lg = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
+    skip = update-index --skip-worktree
+    unskip = update-index --no-skip-worktree
+    skipped = !git ls-files -v | grep '^S' | cut -c3-
 [diff]
 	tool = Kaleidoscope
 [difftool "Kaleidoscope"]
