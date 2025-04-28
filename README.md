@@ -1,4 +1,4 @@
-# Luke's Dotfiles - with a touch of Eric
+# ~Luke~Eric's Dotfiles
 
 ## Directions for use
 
