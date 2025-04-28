@@ -11,7 +11,7 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 		"slack" "Install Slack messaging app" OFF \
 		"vscode" "Install Visual Studio Code editor" OFF \
 		"iterm2" "Install iTerm2 terminal emulator" OFF \
-		"nvim-config" "Install Neovim and configuration from theroymind/config.nvim" OFF \
+		"nvim-config" "Install nvim and config" OFF \
 		"git-cof" "Install git-cof Checking out branches by story number" OFF \
 		3>&1 1>&2 2>&3); \
 	if [ $$? -eq 0 ]; then \
