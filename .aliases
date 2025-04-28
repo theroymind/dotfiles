@@ -20,3 +20,6 @@ alias main="git checkout main && git pull"
 
 # Flush Directory Service cache
 alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+
+alias cfg="cd ~/.config/nvim"
+alias dotfiles="cd ~/.dotfiles"

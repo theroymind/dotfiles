@@ -1,7 +1,6 @@
 [user]
 	name = {NAME}
 	email = {EMAIL}
-	signingkey = 311F38DF0903898A
 [core]
 	editor = vim
 	excludesfile = /Users/{USER_DIRECTORY}/.gitignore_global
@@ -14,6 +13,7 @@
     alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\t=> \\2/' | sort
     ignore=!([ ! -e .gitignore ] && touch .gitignore) | echo $1 >>.gitignore
     cms = commit -S -m
+    co = checkout
     cm  = commit -m
     cma = commit -a -m
     a = add
@@ -29,6 +29,10 @@
     feature = !git checkout $(git branch-name | perl -n -e'/([A-Za-z0-9\\-\\_\\.\\/]+)_STAGING/ && print $1')
     revstaging = !COMMIT=$(git log -n 1 --format="%H") && git staging && git pull && git revert $COMMIT --no-edit && git push && git checkout - && git feature
     recent-branches = "!git for-each-ref --sort=-committerdate refs/heads | less"
+    rbm = "!git checkout master && git pull && git checkout - && git rebase -i origin/master"
+    mk = "checkout -b"
+    del = "branch -D"
+    lg = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative"
 [diff]
 	tool = Kaleidoscope
 [difftool "Kaleidoscope"]
@@ -46,7 +50,7 @@
 	autosetuprebase = always
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
+	path =
 [mergetool "sourcetree"]
 	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true

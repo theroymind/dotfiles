@@ -1,0 +1,31 @@
+#!/bin/bash
+
+number=$1
+
+# List all local and remote branches
+all_branches=$(git branch -a | sed 's/^[* ] *//')
+
+# Find the branch that matches the provided number
+matching_branch=$(echo "$all_branches" | grep "ericroy/sc-$number" | grep -v "_PREPROD" | head -n 1)
+
+if [ -z "$matching_branch" ]; then
+    echo "No matching branch found."
+    exit 1
+fi
+
+# Check if the matching branch is a remote or local branch
+if [[ "$matching_branch" == origin/* ]]; then
+    # Remote branch
+    branch_name="${matching_branch#origin/}"
+else
+    # Local branch
+    branch_name="$matching_branch"
+fi
+
+echo "Found branch: $branch_name"
+read -p "Do you want to checkout this branch? (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    git checkout "$branch_name"
+fi

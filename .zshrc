@@ -10,9 +10,7 @@ fi
 
 # Override OSX Langugage of en_CA with en_US
 export LANG=en_US.utf-8
-
-source $HOME/.asdf/asdf.sh
-#source $HOME/.asdf/completions/asdf.bash
+export ASDF_FORCE_PREPEND=true
 
 #### START ZSH / ANTIGEN SETUP ###
 source ~/.dotfiles/antigen.zsh
@@ -21,6 +19,7 @@ antigen use oh-my-zsh
 
 antigen bundle composer
 antigen bundle docker
+antigen bundle git
 antigen bundle terraform
 antigen bundle z
 
@@ -52,3 +51,10 @@ unset file
 [[ ! -f ~/.dotfiles/.p10k.zsh ]] || source ~/.dotfiles/.p10k.zsh
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
+# append completions to fpath
+fpath=(${ASDF_DATA_DIR:-$HOME/.asdf}/completions $fpath)
+# initialise completions with ZSH's compinit
+autoload -Uz compinit && compinit

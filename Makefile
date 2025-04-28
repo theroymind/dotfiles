@@ -1,7 +1,43 @@
-SHELL := bash
+
+.PHONY: install-prompt
+install-prompt: ## Prompts user with a list of available installations
+	@selected_options=$$(whiptail --title "Installation Options" \
+		--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
+		15 78 6 \
+		"dotfiles" "Install dotfiles (symlinks configuration files)" OFF \
+		"slack" "Install Slack messaging app" OFF \
+		"vscode" "Install Visual Studio Code editor" OFF \
+		"iterm2" "Install iTerm2 terminal emulator" OFF \
+		"neovim" "Install Neovim text editor" OFF \
+		"git-cof" "Install git-cof Checking out branches by story number" OFF \
+		3>&1 1>&2 2>&3); \
+	if [ $$? -eq 0 ]; then \
+		selected_options=$$(echo $$selected_options | tr -d '"'); \
+		if [ -n "$$selected_options" ]; then \
+			echo "\nYou selected: $$selected_options"; \
+			if whiptail --title "Confirm Installation" --yesno "Do you want to proceed with the installation?" 8 60 3>&1 1>&2 2>&3; then \
+				echo "\nProcessing selections..."; \
+				for option in $$selected_options; do \
+					echo "\nInstalling $$option..." && \
+					make install-$$option; \
+				done; \
+				if echo "$$selected_options" | grep -q "dotfiles"; then \
+					echo "\nConfiguring dotfiles..."; \
+					make replace-tokens; \
+				fi; \
+				echo "\nInstallation complete!"; \
+			else \
+				echo "Installation canceled."; \
+			fi; \
+		else \
+			echo "No options selected. Installation canceled."; \
+		fi; \
+	else \
+		echo "Installation canceled."; \
+	fi
 
 .PHONY: all
-all: dotfiles ## Installs the bin and etc directory files and the dotfiles.
+all: dotfiles replace-tokens install-slack install-vscode install-iterm2 install-neovim install-git-cof ## Installs the bin and etc directory files and the dotfiles.
 
 .PHONY: dotfiles
 dotfiles: ## Installs the dotfiles.
@@ -91,5 +127,30 @@ install-slack:
 		echo "Slack is already installed."; \
 	fi
 
-help:
+.PHONY: install-neovim
+install-neovim:
+	@echo "Checking for Homebrew..."
+	@if ! which brew > /dev/null 2>&1; then \
+		echo "Homebrew is not installed. Installing Homebrew..."; \
+		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+		echo "Homebrew installed."; \
+	fi; \
+	echo "Checking for Neovim..."
+	@if ! brew list | grep -q '^neovim$$'; then \
+		echo "Neovim is not installed. Installing Neovim..."; \
+		brew install neovim; \
+		echo "Neovim installed."; \
+	else \
+		echo "Neovim is already installed."; \
+	fi
+
+.PHONY: install-git-cof
+install-git-cof: ## Installs the git-cof command for finding and checking out branches by ticket number
+	@echo "Installing git-cof command..."
+	sudo cp $(CURDIR)/bin/git-cof /usr/local/bin/git-cof
+	sudo chmod +x /usr/local/bin/git-cof
+	@echo "git-cof installed."
+
+.PHONY: help
+help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
