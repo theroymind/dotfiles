@@ -7,6 +7,7 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 		--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
 		15 78 6 \
 		"dotfiles" "Install dotfiles (symlinks configuration files)" OFF \
+		"core" "Install Rosetta and configure core settings" OFF \
 		"slack" "Install Slack messaging app" OFF \
 		"vscode" "Install Visual Studio Code editor" OFF \
 		"iterm2" "Install iTerm2 terminal emulator" OFF \
@@ -23,10 +24,6 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 					echo "\nInstalling $$option..." && \
 					make install-$$option; \
 				done; \
-				if echo "$$selected_options" | grep -q "dotfiles"; then \
-					echo "\nConfiguring dotfiles..."; \
-					make replace-tokens; \
-				fi; \
 				echo "\nInstallation complete!"; \
 			else \
 				echo "Installation canceled."; \
@@ -39,7 +36,7 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 	fi
 
 .PHONY: all
-all: dotfiles replace-tokens install-slack install-vscode install-iterm2 install-nvim-config install-git-cof ## Installs the bin and etc directory files and the dotfiles.
+all: dotfiles install-core install-slack install-vscode install-iterm2 install-nvim-config install-git-cof ## Installs the bin and etc directory files and the dotfiles.
 
 .PHONY: dotfiles
 dotfiles: ## Installs the dotfiles.
@@ -53,8 +50,11 @@ dotfiles: ## Installs the dotfiles.
 .PHONY: help
 
 FILES := $(HOME)/.gitconfig $(HOME)/.dotfiles/.dockerfunc # List of files in which to replace tokens
-.PHONY: replace-tokens
-replace-tokens:
+.PHONY: install-core
+install-core: ## Installs Rosetta and configures core settings
+	@echo "Installing Rosetta..."
+	@softwareupdate --install-rosetta --agree-to-license || echo "Rosetta installation failed or already installed."
+	@echo "Configuring core settings..."
 	@echo "Enter the name:"
 	@read name; \
 	echo "Enter the email:"; \
