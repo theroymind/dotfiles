@@ -1,9 +1,9 @@
 [user]
-	name = Eric Roy
-	email = eric.roy@knak.com
+	name = {NAME}
+	email = {EMAIL}
 [core]
 	editor = vim
-	excludesfile = /Users/eric.roy/.gitignore_global
+	excludesfile = /Users/{USER_DIRECTORY}/.gitignore_global
 [push]
 	default = simple
 [help]
