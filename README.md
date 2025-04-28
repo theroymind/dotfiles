@@ -1,4 +1,4 @@
-# ~Luke~Eric's Dotfiles
+# ~Luke~ Eric's Dotfiles
 
 ## Directions for use
 
