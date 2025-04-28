@@ -1,6 +1,8 @@
 
+.DEFAULT_GOAL := install-prompt
+
 .PHONY: install-prompt
-install-prompt: ## Prompts user with a list of available installations
+install-prompt: ## Default target - Prompts user with a list of available installations
 	@selected_options=$$(whiptail --title "Installation Options" \
 		--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
 		15 78 6 \
@@ -8,7 +10,7 @@ install-prompt: ## Prompts user with a list of available installations
 		"slack" "Install Slack messaging app" OFF \
 		"vscode" "Install Visual Studio Code editor" OFF \
 		"iterm2" "Install iTerm2 terminal emulator" OFF \
-		"neovim" "Install Neovim text editor" OFF \
+		"nvim-config" "Install Neovim and configuration from theroymind/config.nvim" OFF \
 		"git-cof" "Install git-cof Checking out branches by story number" OFF \
 		3>&1 1>&2 2>&3); \
 	if [ $$? -eq 0 ]; then \
@@ -37,7 +39,7 @@ install-prompt: ## Prompts user with a list of available installations
 	fi
 
 .PHONY: all
-all: dotfiles replace-tokens install-slack install-vscode install-iterm2 install-neovim install-git-cof ## Installs the bin and etc directory files and the dotfiles.
+all: dotfiles replace-tokens install-slack install-vscode install-iterm2 install-nvim-config install-git-cof ## Installs the bin and etc directory files and the dotfiles.
 
 .PHONY: dotfiles
 dotfiles: ## Installs the dotfiles.
@@ -127,22 +129,23 @@ install-slack:
 		echo "Slack is already installed."; \
 	fi
 
-.PHONY: install-neovim
-install-neovim:
-	@echo "Checking for Homebrew..."
-	@if ! which brew > /dev/null 2>&1; then \
-		echo "Homebrew is not installed. Installing Homebrew..."; \
-		/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
-		echo "Homebrew installed."; \
-	fi; \
-	echo "Checking for Neovim..."
-	@if ! brew list | grep -q '^neovim$$'; then \
-		echo "Neovim is not installed. Installing Neovim..."; \
-		brew install neovim; \
-		echo "Neovim installed."; \
-	else \
-		echo "Neovim is already installed."; \
+.PHONY: install-nvim-config
+install-nvim-config: ## Installs Neovim configuration from theroymind/config.nvim (includes Neovim installation)
+	@echo "Installing Neovim configuration..."
+	@if [ -d "$(HOME)/.config/nvim" ]; then \
+		echo "Backing up existing Neovim configuration..."; \
+		mv "$(HOME)/.config/nvim" "$(HOME)/.config/nvim.backup.$$(date +%Y%m%d%H%M%S)"; \
 	fi
+	@mkdir -p "$(HOME)/.config"
+	@git clone git@github.com:theroymind/config.nvim.git "$(HOME)/.config/nvim"
+	@echo "Neovim configuration cloned. Running make in the configuration directory..."
+	@if [ -f "$(HOME)/.config/nvim/Makefile" ] || [ -f "$(HOME)/.config/nvim/makefile" ]; then \
+		cd "$(HOME)/.config/nvim" && make; \
+		echo "Neovim configuration make completed."; \
+	else \
+		echo "No Makefile found in the Neovim configuration directory. Skipping make."; \
+	fi
+	@echo "Neovim configuration installed."
 
 .PHONY: install-git-cof
 install-git-cof: ## Installs the git-cof command for finding and checking out branches by ticket number
