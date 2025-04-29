@@ -4,7 +4,7 @@ alias resource="source ~/.zshrc"
 alias dev="cd ~/Development"
 alias mkcd='_(){ mkdir $1; cd $1; }; _'
 
-# Docker 
+# Docker
 alias dc="docker-compose"
 alias dct="docker-compose -f docker-tests.yml"
 
@@ -24,3 +24,18 @@ alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
 alias cfg="cd ~/.config/nvim"
 alias dotfiles="cd ~/.dotfiles"
 alias reload="source ~/.zshrc"
+
+function toggle-key-repeat() {
+    local current_setting=$(defaults read -g ApplePressAndHoldEnabled 2>/dev/null)
+
+    if [[ $current_setting == "1" ]]; then
+        defaults write -g ApplePressAndHoldEnabled -bool false
+        echo "Press-and-hold disabled. Key repeat enabled."
+    else
+        defaults write -g ApplePressAndHoldEnabled -bool true
+        echo "Press-and-hold enabled. Key repeat disabled."
+    fi
+
+    echo "Please log out and back in for changes to take effect."
+}
+alias togglekeys="toggle-key-repeat"
