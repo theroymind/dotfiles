@@ -3,6 +3,17 @@
 
 .PHONY: install-prompt
 install-prompt: ## Default target - Prompts user with a list of available installations
+	@if ! which whiptail > /dev/null 2>&1; then \
+		echo "whiptail not found. Installing via Homebrew (newt)..."; \
+		if ! which brew > /dev/null 2>&1; then \
+			echo "Homebrew is not installed. Installing Homebrew..."; \
+			/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; \
+			echo >> $(HOME)/.zprofile; \
+			echo 'eval "$$(/opt/homebrew/bin/brew shellenv zsh)"' >> $(HOME)/.zprofile; \
+			eval "$$(/opt/homebrew/bin/brew shellenv)"; \
+		fi; \
+		brew install newt; \
+	fi
 	@install_choice=$$(whiptail --title "Installation Options" \
 		--menu "Choose an installation option:" \
 		15 78 2 \
@@ -22,7 +33,7 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 			selected_options=$$(whiptail --title "Custom Installation" \
 				--checklist "Use arrow keys to navigate, space to select/deselect, and enter to confirm:" \
 				15 78 8 \
-				"dotfiles" "Install dotfiles (symlinks configuration files)" OFF \
+				"dotfiles" "Install dotfiles (symlinks configuration files)" ON \
 				"core" "Install Rosetta and configure core settings" OFF \
 				"slack" "Install Slack messaging app" OFF \
 				"vscode" "Install Visual Studio Code editor" OFF \
@@ -57,16 +68,18 @@ install-prompt: ## Default target - Prompts user with a list of available instal
 	fi
 
 .PHONY: all
-all: dotfiles install-core install-slack install-vscode install-iterm2 install-nvim-config install-tmux install-git-cof ## Installs the bin and etc directory files and the dotfiles.
+all: install-dotfiles install-core install-slack install-vscode install-iterm2 install-nvim-config install-tmux install-git-cof ## Installs the bin and etc directory files and the dotfiles.
 
-.PHONY: dotfiles
-dotfiles: ## Installs the dotfiles.
+.PHONY: install-dotfiles
+install-dotfiles: ## Installs the dotfiles.
 	ln -fs $(CURDIR) $(HOME)/.dotfiles;
 	ln -fs $(CURDIR)/.gitconfig $(HOME)/.gitconfig;
 	ln -fs $(CURDIR)/.gitignore_global $(HOME)/.gitignore;
 	ln -fs $(CURDIR)/.tmux.conf $(HOME)/.tmux.conf;
 	ln -fs $(CURDIR)/.vimrc $(HOME)/.vimrc;
 	ln -fs $(CURDIR)/.zshrc $(HOME)/.zshrc;
+	@echo "Configuring Powerlevel10k prompt..."
+	@zsh -i -c 'p10k configure'
 
 .PHONY: help
 
@@ -76,11 +89,11 @@ install-core: ## Installs Rosetta and configures core settings
 	@echo "Installing Rosetta..."
 	@softwareupdate --install-rosetta --agree-to-license || echo "Rosetta installation failed or already installed."
 	@echo "Configuring core settings..."
-	@echo "Enter the name:"
+	@echo "Enter your full name (for git commits, e.g. John Doe):"
 	@read name; \
-	echo "Enter the email:"; \
+	echo "Enter your git email:"; \
 	read email; \
-	echo "Enter the user directory:"; \
+	echo "Enter your macOS username (e.g. ericroy):"; \
 	read user_dir; \
 	for file in $(FILES); do \
 		if [ -f "$$file" ] && [ ! -L "$$file" ]; then \
