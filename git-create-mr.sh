@@ -18,15 +18,39 @@ remoteName=${1:-origin}
 branch=`git rev-parse --abbrev-ref HEAD`
 last_commit_message=$(git log -1 --pretty=%B)
 
-remote=`git remote -v | grep "(push)$" | grep $remoteName`
-regex="$remoteName[[:space:]]+git@([A-Za-z\.]+)[\:|\/](.*)/(.*).git"
+remote=`git remote get-url --push "$remoteName" 2>/dev/null`
+if [[ -z "$remote" ]]; then
+    echo "error: no push URL for remote '$remoteName'"
+    exit 1
+fi
 
-if [[ $remote =~ $regex ]]; then
-    server=${BASH_REMATCH[1]}
-    group=${BASH_REMATCH[2]}
-    project=${BASH_REMATCH[3]}
-else
-    echo "error: unsupported remote"
+# Normalize SSH/HTTPS remote URLs to server + group/project.
+# Handles: git@host:group/project.git  ssh://git@host:port/group/project
+#          https://host/group/project(.git)  http://...  (optional .git)
+path=${remote%.git}
+case "$path" in
+    *://*)                 # ssh:// https:// http://
+        path=${path#*://}  # drop scheme
+        path=${path#*@}    # drop optional user@
+        server=${path%%/*} # server is up to first /
+        path=${path#*/}    # remainder is group/project
+        ;;
+    *@*:*)                 # scp-like: git@host:group/project
+        server=${path#*@}
+        server=${server%%:*}
+        path=${path#*:}    # remainder after host:
+        ;;
+    *)
+        echo "error: unsupported remote '$remote'"
+        exit 1
+        ;;
+esac
+server=${server%%:*}       # strip any :port
+group=${path%/*}           # everything up to last / (keeps GitLab subgroups)
+project=${path##*/}        # last path segment
+
+if [[ -z "$server" || -z "$group" || -z "$project" ]]; then
+    echo "error: could not parse remote '$remote'"
     exit 1
 fi
 
