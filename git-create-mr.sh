@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 
+# Percent-encode a string for safe use in a URL query value (UTF-8 aware).
+urlencode() {
+    local LC_ALL=C
+    local string="$1" out="" i c hex
+    for (( i = 0; i < ${#string}; i++ )); do
+        c="${string:i:1}"
+        case "$c" in
+            [a-zA-Z0-9.~_-]) out+="$c" ;;
+            *) printf -v hex '%02X' "'$c"; out+="%${hex: -2}" ;;
+        esac
+    done
+    printf '%s' "$out"
+}
+
 remoteName=${1:-origin}
 branch=`git rev-parse --abbrev-ref HEAD`
 last_commit_message=$(git log -1 --pretty=%B)
 
 remote=`git remote -v | grep "(push)$" | grep $remoteName`
-regex="origin[[:space:]]+git@([A-Za-z\.]+)[\:|\/](.*)/(.*).git"
+regex="$remoteName[[:space:]]+git@([A-Za-z\.]+)[\:|\/](.*)/(.*).git"
 
 if [[ $remote =~ $regex ]]; then
     server=${BASH_REMATCH[1]}
@@ -36,8 +50,9 @@ fi
 title="$prefix $last_commit_message"
 
 if [[ "$server" == github.com ]]; then
-echo "https://github.com/$(git repofullname)/compare/$target...$branch?expand=1&title=$title&labels=$labels"
-open "https://github.com/$(git repofullname)/compare/$target...$branch?expand=1&title=$title&labels=$labels"
+    url="https://github.com/$group/$project/compare/$target...$branch?expand=1&title=$(urlencode "$title")&labels=$(urlencode "$labels")"
+    echo "$url"
+    open "$url"
 else
     if [[ "$target" == master ]]; then
         open "https://$server/$group/$project/merge_requests/new?merge_request%5Bforce_remove_source_branch%5D=1&merge_request%5Bsource_branch%5D=$branch&merge_request%5B"
