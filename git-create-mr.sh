@@ -16,7 +16,8 @@ urlencode() {
 
 remoteName=${1:-origin}
 branch=`git rev-parse --abbrev-ref HEAD`
-last_commit_message=$(git log -1 --pretty=%B)
+commit_subject=$(git log -1 --pretty=%s)
+commit_body=$(git log -1 --pretty=%b)
 
 remote=`git remote get-url --push "$remoteName" 2>/dev/null`
 if [[ -z "$remote" ]]; then
@@ -71,10 +72,10 @@ if [[ "$branch" == *PREPROD ]]; then
     labels="merge-to-preprod"
 fi
 
-title="$prefix $last_commit_message"
+title="$prefix $commit_subject"
 
 if [[ "$server" == github.com ]]; then
-    url="https://github.com/$group/$project/compare/$target...$branch?expand=1&title=$(urlencode "$title")&labels=$(urlencode "$labels")"
+    url="https://github.com/$group/$project/compare/$target...$branch?expand=1&title=$(urlencode "$title")&labels=$(urlencode "$labels")&body=$(urlencode "$commit_body")"
     echo "$url"
     open "$url"
 else
