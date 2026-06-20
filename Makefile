@@ -78,6 +78,8 @@ install-dotfiles: ## Installs the dotfiles.
 	ln -fs $(CURDIR)/.tmux.conf $(HOME)/.tmux.conf;
 	ln -fs $(CURDIR)/.vimrc $(HOME)/.vimrc;
 	ln -fs $(CURDIR)/.zshrc $(HOME)/.zshrc;
+	mkdir -p $(HOME)/.claude;
+	ln -fs $(CURDIR)/.claude/statusline-new.sh $(HOME)/.claude/statusline-new.sh;
 	@echo "Configuring Powerlevel10k prompt..."
 	@zsh -i -c 'p10k configure'
 
